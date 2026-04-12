@@ -61,6 +61,10 @@ Linux VM. If you use the Podman Desktop bootc image builder's user form, set the
 user to `openclaw` and paste your SSH public key there. That build-time config
 is enough for a local test and you do not need a separate cloud-init seed ISO.
 
+The Podman Desktop BootC extension also provides a VM terminal. Use that directly
+for a quick demo. Use the SSH flow below when you want a separate macOS terminal
+or an SSH tunnel for browser access.
+
 When Podman Desktop starts the VM, it may use `macadam` and `gvproxy` rather than
 the normal `podman machine` list. To find the host-side SSH forward:
 
@@ -74,10 +78,26 @@ Look for a process like:
 /opt/macadam/bin/gvproxy ... -ssh-port 63549 ... bootc-lobster-tank ...
 ```
 
+Or export the forwarded port directly:
+
+```bash
+export PORT="$(
+  ps aux |
+    grep 'gvproxy' |
+    grep 'bootc.*tank' |
+    sed -nE 's/.*-ssh-port ([0-9]+).*/\1/p' |
+    tail -1
+)"
+echo "$PORT"
+```
+
 Then SSH to localhost on that forwarded port:
 
 ```bash
-ssh -o ConnectTimeout=5 -p 63549 openclaw@localhost
+ssh -o ConnectTimeout=5 \
+  -i ~/.ssh/id_ed25519 \
+  -p "$PORT" \
+  openclaw@localhost
 ```
 
 To access the OpenClaw UI from the macOS host browser, keep an SSH tunnel open
@@ -87,7 +107,8 @@ from another terminal:
 ssh -N \
   -o ConnectTimeout=5 \
   -o ExitOnForwardFailure=yes \
-  -p 63549 \
+  -i ~/.ssh/id_ed25519 \
+  -p "$PORT" \
   -L 18789:127.0.0.1:18789 \
   -L 18790:127.0.0.1:18790 \
   openclaw@localhost
@@ -97,6 +118,21 @@ Then open:
 
 ```text
 http://127.0.0.1:18789
+```
+
+To print the dashboard URL from the VM, run:
+
+```bash
+openclaw dashboard --no-open
+```
+
+Or run it through SSH from your Mac:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 \
+  -p "$PORT" \
+  openclaw@localhost \
+  'openclaw dashboard --no-open'
 ```
 
 The forwarded port belongs to the macOS host. Do not combine it with the guest
@@ -130,7 +166,9 @@ enp0s1: 192.168.127.2
 If that address is reachable from macOS, connect to the guest's normal SSH port:
 
 ```bash
-ssh -o ConnectTimeout=5 openclaw@192.168.127.2
+ssh -o ConnectTimeout=5 \
+  -i ~/.ssh/id_ed25519 \
+  openclaw@192.168.127.2
 ```
 
 For UTM, QEMU, or another local VM manager, attach a NoCloud seed ISO with:

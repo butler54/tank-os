@@ -22,8 +22,8 @@ Supported OpenClaw secret names:
 
 | Podman secret | Container env | Notes |
 | --- | --- | --- |
-| `anthropic_api_key` | `ANTHROPIC_API_KEY` | Built-in `anthropic/*` models can use env auth directly. |
-| `openai_api_key` | `OPENAI_API_KEY` | Built-in `openai/*` models can use env auth directly. |
+| `anthropic_api_key` | `ANTHROPIC_API_KEY` | Built-in `anthropic/*` models use env auth directly; the helper does not write a provider override. |
+| `openai_api_key` | `OPENAI_API_KEY` | Built-in `openai/*` models use env auth directly; the helper does not write a provider override. |
 | `gemini_api_key` | `GEMINI_API_KEY` | Adds `models.providers.google` with a SecretRef. |
 | `google_api_key` | `GOOGLE_API_KEY` | Alternate Google env name; used only if `gemini_api_key` is absent. |
 | `openrouter_api_key` | `OPENROUTER_API_KEY` | Adds `models.providers.openrouter` with a SecretRef. |
@@ -55,7 +55,10 @@ The helper writes rootless Quadlet drop-ins under
 ```
 
 This mirrors the installer model: Podman secrets supply environment variables,
-and OpenClaw config references those env values through SecretRefs.
+and OpenClaw config references those env values through SecretRefs when explicit
+provider metadata is needed. For built-in Anthropic and OpenAI models, the env
+vars are enough, so `tank-openclaw-secrets` leaves the built-in provider catalog
+in place.
 
 ## Custom Providers
 

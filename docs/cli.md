@@ -10,9 +10,23 @@ For the default instance:
 ```bash
 openclaw gateway status --deep
 openclaw doctor
+openclaw dashboard --no-open
 openclaw devices list
 openclaw devices approve <request-id>
 ```
+
+## Dashboard URL
+
+To print the OpenClaw dashboard URL from the VM:
+
+```bash
+openclaw dashboard --no-open
+```
+
+If `gateway.auth.token` is configured as a plain token, the URL includes it as a
+fragment, for example `http://127.0.0.1:18789/#token=...`. If the token is
+SecretRef-managed, OpenClaw intentionally prints a non-tokenized URL and asks you
+to use the external token source instead.
 
 The wrapper targets the `openclaw` container by default. To target another
 container, either use `--container`:

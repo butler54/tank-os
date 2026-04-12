@@ -55,15 +55,16 @@ podman build \
 ## Build A Disk Image With Podman Desktop
 
 The Podman Desktop BootC extension can build a VM disk image from
-`localhost/tank-os:latest`.
+`localhost/tank-os:latest` or the published `quay.io/sallyom/tank-os:latest`.
 
 Recommended local test settings on Apple Silicon:
 
 - Bootc image: `localhost/tank-os:latest`
+- Or published image: `quay.io/sallyom/tank-os:latest`
 - Disk image type: `qcow2`
 - Target architecture: `arm64` or `aarch64`
 - Root filesystem: `xfs`
-- Output folder: a dedicated writable directory such as `/Users/somalley/git/out-tank-os`
+- Output folder: a dedicated writable directory such as `/Users/<you>/git/out-tank-os`
 - User: `openclaw`
 - SSH public key: your Mac SSH public key
 - Groups: `wheel`

@@ -18,7 +18,8 @@ RUN set -eux; \
       podman \
       python3 \
       shadow-utils \
-      sudo; \
+      sudo \
+      vim-enhanced; \
     dnf clean all; \
     rm -rf /var/cache/dnf /var/log/dnf*; \
     getent group openclaw >/dev/null || groupadd -g "${OPENCLAW_GID}" openclaw; \
@@ -38,6 +39,7 @@ COPY rootfs/ /
 RUN set -eux; \
     chmod 0755 \
       /usr/local/bin/openclaw \
+      /usr/local/bin/tank-os-version \
       /usr/local/bin/tank-openclaw-secrets \
       /usr/libexec/tank-os/bootstrap-openclaw \
       /usr/libexec/tank-os/bootstrap-service-gator \
