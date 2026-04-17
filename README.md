@@ -31,24 +31,6 @@ The result is still a normal Fedora system. Users SSH in as `openclaw`, edit
 OpenClaw files in `~/.openclaw`, use the host `openclaw` CLI wrapper, and let
 systemd/Podman keep the service running.
 
-## Direction
-
-- Base the OS image on Fedora bootc.
-- Run OpenClaw through a rootless Podman Quadlet owned by an `openclaw` login user.
-- Keep editable state in `~openclaw/.openclaw` so users can manage OpenClaw with the CLI and manually edit workspace files.
-- Use Podman secrets in the `openclaw` user's rootless secret store instead of baking secrets into the image.
-- Use cloud-init or VM-local provisioning to inject SSH keys and instance-specific access.
-
-## Initial Scope
-
-- Single OpenClaw gateway container.
-- Rootless user Quadlet.
-- Host-editable OpenClaw state under `/var/home/openclaw/.openclaw`.
-- Optional service-gator sidecar for scoped GitHub/GitLab/Forgejo/JIRA access.
-- Documentation for EC2, local macOS VM, and libvirt bootstrapping.
-
-Sidecars such as LiteLLM and OTEL can come later once the single-container shape is working.
-
 ## Start Here
 
 - Build the image: [docs/build.md](docs/build.md)
@@ -64,23 +46,6 @@ and [bootc-image-builder docs](https://osbuild.org/docs/bootc/).
 The host `openclaw` command delegates into the running OpenClaw container. Log in as `openclaw` when manually editing files under `~/.openclaw`.
 
 For a Podman Desktop/macOS VM, see the [local macOS VM access notes](docs/provisioning.md#local-macos-vm) for finding the SSH port or guest IP.
-
-## Demo Flow
-
-For a short recording, a useful narration path is:
-
-1. tank-os is a Fedora bootc image that starts OpenClaw as a rootless Podman
-   Quadlet.
-2. The same image can be turned into a local QCOW2, a cloud image, or a device
-   image.
-3. Podman Desktop can build and boot the local Linux VM on macOS.
-4. The `openclaw` user owns the running service and editable state in
-   `~/.openclaw`.
-5. Secrets are added after boot with rootless Podman secrets, then synced with
-   `tank-openclaw-secrets`.
-6. The dashboard URL comes from `openclaw dashboard --no-open`.
-7. Updates are image based: publish a new image and run `bootc switch` or
-   `bootc upgrade`.
 
 ## Agent Prompt
 
