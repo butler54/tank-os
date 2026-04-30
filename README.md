@@ -63,9 +63,10 @@ Goals:
 - Clone the repository `git clone https://github.com/LobsterTrap/tank-os.git` and work from there (cd)
 - Build or use the published bootc image `quay.io/sallyom/tank-os:latest` for arm64 or amd64.
 - Build a QCOW2 disk image with the Podman Desktop BootC extension or manual bootc-image-builder flow.
-- Start the disk image as a Linux VM on macOS/Podman Desktop.
+- Start the disk image as a Linux VM. On macOS, QEMU with user-mode networking is the most reliable path: `qemu-system-aarch64 -machine virt,highmem=on -accel hvf -cpu host -smp 4 -m 4096 -drive file=disk.qcow2,format=qcow2,if=virtio -drive if=pflash,format=raw,unit=0,file=$(brew --prefix)/share/qemu/edk2-aarch64-code.fd,readonly=on -device virtio-net-pci,netdev=net0 -netdev user,id=net0,hostfwd=tcp::2222-:22 -nographic`. Podman Desktop BootC extension or UTM also work.
+- If the default 10 GB disk is too small for the OpenClaw container image (~3.5 GB), resize before first boot: `qemu-img resize disk.qcow2 20G`. XFS grows automatically on next boot.
 - SSH in as `openclaw`, verify `sudo -n true`, `sudo bootc status`, `systemctl --user status openclaw.service`, and `podman ps`.
-- If the VM is running under Podman Desktop/macadam, find the forwarded SSH port from the `gvproxy` process and use `ssh -i ~/.ssh/id_ed25519 -p <port> openclaw@localhost`.
+- If the VM is running under Podman Desktop/macadam, find the forwarded SSH port from the `gvproxy` process and use `ssh -i ~/.ssh/id_ed25519 -p <port> openclaw@localhost`. For QEMU with the hostfwd above, use `ssh -i ~/.ssh/id_ed25519 -p 2222 openclaw@localhost`.
 - Use an SSH tunnel to open the UI from the host browser: `ssh -N -i ~/.ssh/id_ed25519 -p <port> -L 18789:127.0.0.1:18789 -L 18790:127.0.0.1:18790 openclaw@localhost`, then browse to `http://127.0.0.1:18789`.
 - Print the dashboard URL from the VM with `openclaw dashboard --no-open`.
 - Configure model provider and service-gator credentials using rootless Podman secrets as the `openclaw` user, then run `tank-openclaw-secrets`.

@@ -5,3 +5,4 @@
 *.img
 *.zst
 /.tmp/
+out-tank-os/
