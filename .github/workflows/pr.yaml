@@ -7,11 +7,6 @@ on:
 
 permissions: read-all
 
-env:
-  REGISTRY_USER: ${{ vars.REGISTRY_USER }}
-  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY }}
-  IMAGE: tank-os
-
 jobs:
   build:
     name: Build ${{ matrix.platform }}
@@ -39,7 +34,7 @@ jobs:
       id: build-image
       uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
       with:
-        image: ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}
+        image: localhost/tank-os
         tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
         context: bootc
         containerfiles: |
@@ -47,4 +42,4 @@ jobs:
 
     - name: Validate image
       run: |
-        buildah inspect ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+        buildah inspect localhost/tank-os:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
