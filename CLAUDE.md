@@ -10,7 +10,14 @@ bootc turns a container image into a bootable OS image (VM disk, cloud image, or
 
 ## Build Commands
 
-### Build the bootc container image
+### Quick build with Makefile
+
+```bash
+make build  # Auto-detects architecture (arm64 or amd64)
+make help   # Show all targets
+```
+
+### Manual build
 
 For arm64 (Apple Silicon):
 ```bash
@@ -123,7 +130,7 @@ bootc/
         └── tank-os-version             # Print image version
 
 docs/
-├── build.md                   # Build instructions
+├── build.md                   # Build instructions and CI/CD setup
 ├── provisioning.md            # SSH/cloud-init/VM access
 ├── cli.md                     # OpenClaw CLI wrapper details
 ├── model-providers.md         # Secrets and provider config
@@ -132,6 +139,16 @@ docs/
 
 examples/cloud-init/
 └── openclaw-user-data.yaml    # Cloud-init template for provisioning
+
+.github/workflows/
+├── pr.yaml                    # PR build validation
+├── create-release.yml         # Semantic versioning and tag creation
+├── build-release.yml          # Multi-arch build, signing, SBOM, attestation
+├── commitlint.yml             # PR title validation
+└── scorecard.yml              # OpenSSF Scorecard security analysis
+
+Makefile                       # Local build helpers
+commitlint.config.js           # Conventional commit rules
 ```
 
 ## Local Testing Workflow (macOS/Podman Desktop)
