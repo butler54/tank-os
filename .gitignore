@@ -5,3 +5,5 @@
 *.img
 *.zst
 /.tmp/
+/out-tank-os/
+prompt.md
