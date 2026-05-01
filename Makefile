@@ -2,7 +2,7 @@
 
 # Registry configuration (no defaults - must be set explicitly)
 IMAGE_REGISTRY ?=
-REGISTRY_USER ?=
+IMAGE_NAMESPACE ?=
 IMAGE := tank-os
 
 # Auto-detect architecture
@@ -19,8 +19,8 @@ endif
 
 # Image URI construction
 ifneq ($(IMAGE_REGISTRY),)
-  ifneq ($(REGISTRY_USER),)
-    IMAGE_URI := $(IMAGE_REGISTRY)/$(REGISTRY_USER)/$(IMAGE)
+  ifneq ($(IMAGE_NAMESPACE),)
+    IMAGE_URI := $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)/$(IMAGE)
   else
     IMAGE_URI := localhost/$(IMAGE)
   endif
@@ -36,7 +36,7 @@ help:
 	@echo ""
 	@echo "Common targets:"
 	@echo "  build          Build the bootc container image locally"
-	@echo "  push           Push the image to registry (requires IMAGE_REGISTRY and REGISTRY_USER)"
+	@echo "  push           Push the image to registry (requires IMAGE_REGISTRY and IMAGE_NAMESPACE)"
 	@echo "  build-qcow2    Build a QCOW2 disk image using bootc-image-builder"
 	@echo "  build-iso      Build an ISO installer using bootc-image-builder"
 	@echo "  lint           Run bootc container lint (if available)"
@@ -44,11 +44,11 @@ help:
 	@echo "  clean          Remove build artifacts"
 	@echo ""
 	@echo "Current configuration:"
-	@echo "  ARCH:           $(ARCH)"
-	@echo "  PLATFORM:       $(PLATFORM)"
-	@echo "  IMAGE_URI:      $(IMAGE_URI)"
-	@echo "  IMAGE_REGISTRY: $(IMAGE_REGISTRY)"
-	@echo "  REGISTRY_USER:  $(REGISTRY_USER)"
+	@echo "  ARCH:            $(ARCH)"
+	@echo "  PLATFORM:        $(PLATFORM)"
+	@echo "  IMAGE_URI:       $(IMAGE_URI)"
+	@echo "  IMAGE_REGISTRY:  $(IMAGE_REGISTRY)"
+	@echo "  IMAGE_NAMESPACE: $(IMAGE_NAMESPACE)"
 
 .PHONY: build
 build:
@@ -56,9 +56,9 @@ build:
 
 .PHONY: push
 push:
-	@if [ -z "$(IMAGE_REGISTRY)" ] || [ -z "$(REGISTRY_USER)" ]; then \
-		echo "Error: IMAGE_REGISTRY and REGISTRY_USER must be set to push images"; \
-		echo "Example: make push IMAGE_REGISTRY=quay.io REGISTRY_USER=myuser"; \
+	@if [ -z "$(IMAGE_REGISTRY)" ] || [ -z "$(IMAGE_NAMESPACE)" ]; then \
+		echo "Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to push images"; \
+		echo "Example: make push IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg"; \
 		exit 1; \
 	fi
 	podman push $(IMAGE_URI):latest
@@ -121,8 +121,8 @@ verify:
 		echo "COSIGN_PUBLIC_KEY not set, skipping verification"; \
 		exit 0; \
 	fi
-	@if [ -z "$(IMAGE_REGISTRY)" ] || [ -z "$(REGISTRY_USER)" ]; then \
-		echo "Error: IMAGE_REGISTRY and REGISTRY_USER must be set to verify images"; \
+	@if [ -z "$(IMAGE_REGISTRY)" ] || [ -z "$(IMAGE_NAMESPACE)" ]; then \
+		echo "Error: IMAGE_REGISTRY and IMAGE_NAMESPACE must be set to verify images"; \
 		exit 1; \
 	fi
 	@if ! command -v cosign >/dev/null 2>&1; then \
