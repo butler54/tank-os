@@ -9,3 +9,4 @@
 prompt.md
 cosign.key
 cosign.pub
+.playwright-mcp/
