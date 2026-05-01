@@ -130,7 +130,7 @@ verify:
 		exit 1; \
 	fi
 	@trap 'rm -f /tmp/cosign.pub' EXIT; \
-	echo "$$COSIGN_PUBLIC_KEY" | base64 -d > /tmp/cosign.pub && \
+	printf '%s\n' "$$COSIGN_PUBLIC_KEY" > /tmp/cosign.pub && \
 	cosign verify --key /tmp/cosign.pub $(IMAGE_URI):latest
 
 .PHONY: clean

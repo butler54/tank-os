@@ -7,3 +7,5 @@
 /.tmp/
 /out-tank-os/
 prompt.md
+cosign.key
+cosign.pub
