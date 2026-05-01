@@ -199,8 +199,8 @@ The `Makefile` provides convenient local build commands:
 # Build the image locally (auto-detects architecture)
 make build
 
-# Build and push to a registry (requires IMAGE_REGISTRY and REGISTRY_USER)
-make build push IMAGE_REGISTRY=quay.io REGISTRY_USER=myuser
+# Build and push to a registry (requires IMAGE_REGISTRY and IMAGE_NAMESPACE)
+make build push IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg
 
 # Build a QCOW2 disk image (requires config.toml in repo root)
 make build-qcow2
@@ -209,13 +209,16 @@ make build-qcow2
 make build-iso
 
 # Verify image signature (if COSIGN_PUBLIC_KEY env var is set)
-make verify COSIGN_PUBLIC_KEY="$(cat cosign.pub | base64)"
+make verify COSIGN_PUBLIC_KEY="$(cat cosign.pub | base64)" \
+  IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg
 
 # Clean build artifacts
 make clean
 ```
 
-The Makefile automatically detects your architecture (`arm64` or `amd64`) and builds for that platform. Images are tagged as `localhost/tank-os:latest` by default, or `<REGISTRY>/<USER>/tank-os:latest` if registry variables are set.
+The Makefile automatically detects your architecture (`arm64` or `amd64`) and builds for that platform. Images are tagged as `localhost/tank-os:latest` by default, or `<REGISTRY>/<NAMESPACE>/tank-os:latest` if registry variables are set.
+
+**Note**: The Makefile uses `IMAGE_NAMESPACE` for the image path. Authentication credentials are handled separately via `podman login` before running `make push`.
 
 ## CI/CD System
 
@@ -253,15 +256,42 @@ The repository includes a full GitHub Actions CI/CD pipeline adapted from enterp
 
 To use the CI/CD system in a fork, configure these **repository variables** (Settings → Secrets and variables → Actions → Variables):
 
-- `REGISTRY_USER` — your registry username (e.g., `myuser`) **[required]**
 - `IMAGE_REGISTRY` — registry hostname (e.g., `quay.io` or `ghcr.io`) **[required]**
+- `IMAGE_NAMESPACE` — organization or user namespace in the registry (e.g., `myorg` or `myuser`) **[required]**
+  - This is the path component after the registry: `quay.io/{IMAGE_NAMESPACE}/tank-os`
+  - Examples: `myorg`, `myuser`, `my-team`
 
 And these **repository secrets** (Settings → Secrets and variables → Actions → Secrets):
 
+- `REGISTRY_USER` — username for authentication to the registry **[required]**
+  - This is used for `podman login` / `docker login` authentication only
+  - May be different from `IMAGE_NAMESPACE` (e.g., robot account or service account)
 - `REGISTRY_PASSWORD` — registry password or token **[required]**
 - `FG_PAT` — fine-grained GitHub Personal Access Token for creating release tags **[required]**
   - Token needs `contents: write` permission on the repository
   - Create at: https://github.com/settings/personal-access-tokens/new
+
+**Example Configuration**:
+- **Scenario 1**: Personal account pushing to personal namespace
+  - `IMAGE_REGISTRY`: `quay.io`
+  - `IMAGE_NAMESPACE`: `myuser`
+  - `REGISTRY_USER`: `myuser` (secret)
+  - `REGISTRY_PASSWORD`: `mypassword` (secret)
+  - **Result**: Images pushed to `quay.io/myuser/tank-os`
+
+- **Scenario 2**: Robot account pushing to organization namespace
+  - `IMAGE_REGISTRY`: `quay.io`
+  - `IMAGE_NAMESPACE`: `myorg`
+  - `REGISTRY_USER`: `myorg+robot` (secret)
+  - `REGISTRY_PASSWORD`: `robot-token` (secret)
+  - **Result**: Images pushed to `quay.io/myorg/tank-os`
+
+- **Scenario 3**: GitHub GHCR with personal account pushing to org
+  - `IMAGE_REGISTRY`: `ghcr.io`
+  - `IMAGE_NAMESPACE`: `myorg`
+  - `REGISTRY_USER`: `myuser` (secret)
+  - `REGISTRY_PASSWORD`: `ghp_...` (secret - GitHub PAT)
+  - **Result**: Images pushed to `ghcr.io/myorg/tank-os`
 
 ### Fork Setup: Optional Configuration (Image Signing)
 
