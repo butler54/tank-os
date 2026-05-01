@@ -209,7 +209,7 @@ make build-qcow2
 make build-iso
 
 # Verify image signature (if COSIGN_PUBLIC_KEY env var is set)
-make verify COSIGN_PUBLIC_KEY="$(cat cosign.pub | base64)" \
+make verify COSIGN_PUBLIC_KEY="$(cat cosign.pub)" \
   IMAGE_REGISTRY=quay.io IMAGE_NAMESPACE=myorg
 
 # Clean build artifacts
@@ -298,16 +298,21 @@ And these **repository secrets** (Settings → Secrets and variables → Actions
 To enable image signing with cosign:
 
 **Repository variables:**
-- `COSIGN_PUBLIC_KEY` — base64-encoded cosign public key (output of `cat cosign.pub | base64`)
+- `COSIGN_PUBLIC_KEY` — cosign public key content (PEM format, multi-line)
+  - Paste the entire content of `cosign.pub` directly into the variable
+  - Include the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` lines
+  - GitHub variables handle multi-line content correctly
 
 **Repository secrets:**
-- `COSIGN_PRIVATE_KEY` — cosign private key
+- `COSIGN_PRIVATE_KEY` — cosign private key (full PEM content)
 - `COSIGN_PASSWORD` — passphrase for the cosign key
 
 If these are not set, the signing steps are gracefully skipped. Generate a cosign keypair:
 
 ```bash
 cosign generate-key-pair
+# Then copy the contents of cosign.pub (entire file) to COSIGN_PUBLIC_KEY variable
+# And copy the contents of cosign.key (entire file) to COSIGN_PRIVATE_KEY secret
 ```
 
 **Security Note**: The CI/CD pipeline includes automatic cleanup of signing keys:

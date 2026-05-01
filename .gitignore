@@ -8,3 +8,5 @@
 /out-tank-os/
 .playwright-mcp/
 prompt.md
+cosign.key
+cosign.pub
