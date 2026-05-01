@@ -11,14 +11,18 @@ ARG OPENCLAW_GID=1000
 ARG OPENCLAW_SUBID_START=100000
 ARG OPENCLAW_SUBID_COUNT=65536
 
+RUN curl -fsSL https://pkgs.tailscale.com/stable/fedora/tailscale.repo -o /etc/yum.repos.d/tailscale.repo
+
 RUN set -eux; \
     dnf -y install \
       cloud-init \
+      jq \
       openssh-server \
       podman \
       python3 \
       shadow-utils \
       sudo \
+      tailscale \
       vim-enhanced; \
     dnf clean all; \
     rm -rf /var/cache/dnf /var/log/dnf*; \
@@ -46,7 +50,7 @@ RUN set -eux; \
       /usr/libexec/tank-os/sync-podman-secrets; \
     chmod 0440 /etc/sudoers.d/openclaw; \
     chown -R openclaw:openclaw /var/home/openclaw; \
-    systemctl enable sshd.service; \
+    systemctl enable sshd.service tailscaled.service; \
     for unit in \
       cloud-init-local.service \
       cloud-init-network.service \
