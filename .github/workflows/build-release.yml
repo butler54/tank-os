@@ -179,7 +179,20 @@ jobs:
         cosign verify \
           --key /tmp/cosign.pub \
           ${IMAGE_URI}:latest
+
+    - name: Cleanup signing keys
+      if: always()
+      run: |
+        # Remove public key file if it exists
         rm -f /tmp/cosign.pub
+        # Clean up cosign cache/temp directories that might contain key material
+        rm -rf ~/.sigstore
+        rm -rf ~/.cosign
+        # Clear any cosign environment variables
+        unset COSIGN_PRIVATE_KEY
+        unset COSIGN_PASSWORD
+        # Overwrite memory (best effort on ephemeral runners)
+        sync
 
     - name: Get manifest digest
       id: manifest_digest

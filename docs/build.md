@@ -280,6 +280,12 @@ If these are not set, the signing steps are gracefully skipped. Generate a cosig
 cosign generate-key-pair
 ```
 
+**Security Note**: The CI/CD pipeline includes automatic cleanup of signing keys:
+- A dedicated cleanup step always runs (even if signing fails) to remove temporary key files
+- Cosign cache directories (`~/.sigstore`, `~/.cosign`) are purged after signing
+- The Makefile's `verify` target uses a trap to ensure public key cleanup on exit
+- Private keys are never written to disk (passed via environment variables only)
+
 ### Optional: Release Registry Pinning
 
 Set the `RELEASE_REGISTRY` variable to the full registry/repo path that deployed images should trust for updates:
