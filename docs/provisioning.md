@@ -34,6 +34,12 @@ openclaw status --deep
 The `openclaw` command on the host delegates to the running OpenClaw container.
 See [cli.md](cli.md) for the wrapper behavior and multi-instance notes.
 
+### Private Registry Authentication
+
+If you're using private container images (tank-os, OpenClaw, or service-gator), you need to inject registry credentials at provision time. See [private-registries.md](private-registries.md) for detailed instructions and cloud-init examples.
+
+The `examples/cloud-init/openclaw-user-data.yaml` file includes commented-out `write_files` sections for both bootc and Podman registry authentication.
+
 ## EC2
 
 Use the cloud-init YAML as EC2 user data. Replace the public key placeholder before launch.

@@ -11,5 +11,39 @@ users:
     ssh_authorized_keys:
       - ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY tank-os
 
+# Uncomment to inject registry credentials for private images
+# See docs/private-registries.md for details
+#write_files:
+#  # bootc auth for OS updates from private registry
+#  - path: /etc/ostree/auth.json
+#    owner: root:root
+#    permissions: '0600'
+#    content: |
+#      {
+#        "auths": {
+#          "quay.io": {
+#            "auth": "BASE64_ENCODED_USERNAME:PASSWORD"
+#          }
+#        }
+#      }
+#
+#  # Podman auth for private OpenClaw/service-gator images
+#  - path: /var/home/openclaw/.config/containers/auth.json
+#    owner: openclaw:openclaw
+#    permissions: '0600'
+#    content: |
+#      {
+#        "auths": {
+#          "ghcr.io": {
+#            "auth": "BASE64_ENCODED_USERNAME:TOKEN"
+#          }
+#        }
+#      }
+
 runcmd:
   - [loginctl, enable-linger, openclaw]
+#  # Uncomment if using write_files above for registry auth
+#  - mkdir -p /var/home/openclaw/.config/containers
+#  - chown -R openclaw:openclaw /var/home/openclaw/.config
+#  - chmod 600 /etc/ostree/auth.json
+#  - chmod 600 /var/home/openclaw/.config/containers/auth.json

@@ -135,7 +135,8 @@ docs/
 ├── cli.md                     # OpenClaw CLI wrapper details
 ├── model-providers.md         # Secrets and provider config
 ├── service-gator.md           # service-gator setup
-└── tailscale.md               # Tailscale setup (optional feature)
+├── tailscale.md               # Tailscale setup (optional feature)
+└── private-registries.md      # Private registry authentication (bootc + Podman)
 
 examples/cloud-init/
 └── openclaw-user-data.yaml    # Cloud-init template for provisioning
@@ -214,6 +215,7 @@ systemctl --user restart openclaw.service
 ## Important Notes for Development
 
 - **Do not bake secrets into the image**: Private SSH keys, API keys, and tokens must be added at provision time (cloud-init, Podman Desktop user form, or post-boot via Podman secrets)
+- **Private registry authentication**: If using private images, configure auth files at provision time. See `docs/private-registries.md` for bootc (`/etc/ostree/auth.json`) and Podman (`~openclaw/.config/containers/auth.json`) authentication
 - **State is mutable**: The `~openclaw/.openclaw` directory is writable and persists across reboots (it's on the root filesystem, not in the container)
 - **Rootless by default**: Both OpenClaw and service-gator run as rootless Podman containers owned by the `openclaw` user, not root
 - **CLI wrapper delegation**: The `/usr/local/bin/openclaw` command automatically delegates to the `openclaw` user and `podman exec`s into the running container
