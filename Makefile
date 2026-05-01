@@ -129,9 +129,9 @@ verify:
 		echo "Error: cosign command not found"; \
 		exit 1; \
 	fi
-	echo "$$COSIGN_PUBLIC_KEY" | base64 -d > /tmp/cosign.pub
+	@trap 'rm -f /tmp/cosign.pub' EXIT; \
+	echo "$$COSIGN_PUBLIC_KEY" | base64 -d > /tmp/cosign.pub && \
 	cosign verify --key /tmp/cosign.pub $(IMAGE_URI):latest
-	rm -f /tmp/cosign.pub
 
 .PHONY: clean
 clean:
