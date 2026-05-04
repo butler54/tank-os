@@ -86,6 +86,10 @@ sudo bootc upgrade --apply
 - **Tailscale (optional)**: Pre-installed but not activated. Provides secure remote access without SSH tunnels
   - `tailscaled` service is enabled but does nothing until authenticated
   - See `docs/tailscale.md` for setup and Tailscale Serve configuration
+- **signal-cli (optional)**: Pre-installed but not activated. Enables OpenClaw to send/receive Signal messages
+  - Runs as a systemd user service (`signal-cli.service`) once registered
+  - Communicates with OpenClaw via JSON-RPC on `http://127.0.0.1:8080`
+  - See `docs/signal.md` for registration and OpenClaw channel configuration
 
 ### Bootstrap Flow
 
@@ -120,12 +124,15 @@ bootc/
     │   │   └── service-gator.container # service-gator Quadlet
     │   ├── sudoers.d/openclaw          # Passwordless sudo for openclaw user
     │   └── tank-os-release             # Version metadata
+    ├── etc/systemd/user/
+    │   └── signal-cli.service          # signal-cli JSON-RPC daemon (disabled until registered)
     ├── usr/libexec/tank-os/
     │   ├── bootstrap-openclaw          # First-run setup for OpenClaw
     │   ├── bootstrap-service-gator     # First-run setup for service-gator
     │   └── sync-podman-secrets         # Internal helper for tank-openclaw-secrets
     └── usr/local/bin/
         ├── openclaw                    # CLI wrapper (delegates to container)
+        ├── signal-cli                  # Symlink → /opt/signal-cli-VERSION/bin/signal-cli
         ├── tank-openclaw-secrets       # Sync Podman secrets to OpenClaw config
         └── tank-os-version             # Print image version
 
@@ -136,6 +143,7 @@ docs/
 ├── model-providers.md         # Secrets and provider config
 ├── service-gator.md           # service-gator setup
 ├── tailscale.md               # Tailscale setup (optional feature)
+├── signal.md                  # Signal messaging setup via signal-cli (optional feature)
 └── private-registries.md      # Private registry authentication (bootc + Podman)
 
 examples/cloud-init/

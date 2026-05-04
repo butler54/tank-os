@@ -1,6 +1,8 @@
 ARG FEDORA_BOOTC_BASE=quay.io/fedora/fedora-bootc:latest
 FROM ${FEDORA_BOOTC_BASE}
 
+ARG SIGNAL_CLI_VERSION=0.14.3
+
 LABEL containers.bootc=1 \
   org.opencontainers.image.title="tank-os" \
   org.opencontainers.image.description="Fedora bootc image for OpenClaw on rootless Podman" \
@@ -16,6 +18,7 @@ RUN curl -fsSL https://pkgs.tailscale.com/stable/fedora/tailscale.repo -o /etc/y
 RUN set -eux; \
     dnf -y install \
       cloud-init \
+      java-25-openjdk-headless \
       jq \
       openssh-server \
       podman \
@@ -39,6 +42,14 @@ RUN set -eux; \
     touch /var/lib/systemd/linger/openclaw
 
 COPY rootfs/ /
+
+RUN set -eux; \
+    curl -fsSL \
+      "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}-Linux-client.tar.gz" \
+      -o /tmp/signal-cli.tar.gz; \
+    tar -xzf /tmp/signal-cli.tar.gz -C /opt/; \
+    ln -sf "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli; \
+    rm /tmp/signal-cli.tar.gz
 
 RUN set -eux; \
     chmod 0755 \
