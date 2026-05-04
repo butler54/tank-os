@@ -18,7 +18,7 @@ RUN curl -fsSL https://pkgs.tailscale.com/stable/fedora/tailscale.repo -o /etc/y
 RUN set -eux; \
     dnf -y install \
       cloud-init \
-      java-17-openjdk-headless \
+      java-21-openjdk-headless \
       jq \
       openssh-server \
       podman \
