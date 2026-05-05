@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.1.1 (2026-05-05)
+
+### Bug Fixes
+
+- Correct signal-cli extraction path and add qrencode
+  ([#8](https://github.com/butler54/tank-os/pull/8),
+  [`4062810`](https://github.com/butler54/tank-os/commit/4062810da6e7c72fe7887e210facaae6c0c4874d))
+
+
 ## v1.1.0 (2026-05-04)
 
 ### Bug Fixes
