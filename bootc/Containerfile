@@ -20,6 +20,7 @@ RUN set -eux; \
       cloud-init \
       java-25-openjdk-headless \
       jq \
+      qrencode \
       openssh-server \
       podman \
       python3 \
@@ -44,10 +45,11 @@ RUN set -eux; \
 COPY rootfs/ /
 
 RUN set -eux; \
+    mkdir -p /opt/signal-cli-${SIGNAL_CLI_VERSION}; \
     curl -fsSL \
       "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_CLI_VERSION}/signal-cli-${SIGNAL_CLI_VERSION}-Linux-client.tar.gz" \
       -o /tmp/signal-cli.tar.gz; \
-    tar -xzf /tmp/signal-cli.tar.gz -C /opt/; \
+    tar -xzf /tmp/signal-cli.tar.gz -C /opt/signal-cli-${SIGNAL_CLI_VERSION} --strip-components=1; \
     ln -sf "/opt/signal-cli-${SIGNAL_CLI_VERSION}/bin/signal-cli" /usr/local/bin/signal-cli; \
     rm /tmp/signal-cli.tar.gz
 
