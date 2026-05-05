@@ -88,7 +88,11 @@ sudo bootc upgrade --apply
   - See `docs/tailscale.md` for setup and Tailscale Serve configuration
 - **signal-cli (optional)**: Pre-installed but not activated. Enables OpenClaw to send/receive Signal messages
   - Runs as a systemd user service (`signal-cli.service`) once registered
-  - Communicates with OpenClaw via JSON-RPC on `http://127.0.0.1:8080`
+  - Communicates with OpenClaw via JSON-RPC on `http://127.0.0.1:8181` (port 8080 conflicts with service-gator)
+  - Must run in single-account mode (`-a +NUMBER`) with `--receive-mode=on-start`; without these, SSE events are silently dropped
+  - Account number goes in a drop-in: `~/.config/systemd/user/signal-cli.service.d/10-account.conf`
+  - Set `autoStart: false` in OpenClaw config — signal-cli lives on the host, not inside the container
+  - Use UUIDs in `allowFrom` — Signal privacy hides `sourceNumber` by default
   - See `docs/signal.md` for registration and OpenClaw channel configuration
 
 ### Bootstrap Flow

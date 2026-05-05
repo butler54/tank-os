@@ -7,8 +7,9 @@ Image=ghcr.io/cgwalters/service-gator:latest
 ContainerName=service-gator
 Pull=newer
 RunInit=true
-Volume=%h/.config/service-gator:/etc/service-gator:Z
-Volume=%h/.openclaw:/workspaces:Z
+Volume=%h/.config/service-gator:/etc/service-gator:z
+Volume=%h/.openclaw:/workspaces:z
+SecurityLabelLevel=s0
 Environment=GH_TOKEN_FILE=/run/secrets/gh_token
 Environment=GITLAB_TOKEN_FILE=/run/secrets/gitlab_token
 Environment=FORGEJO_TOKEN_FILE=/run/secrets/forgejo_token
