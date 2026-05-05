@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.1.2 (2026-05-05)
+
+### Bug Fixes
+
+- Use portable JAR distribution for signal-cli instead of Linux-client binary
+  ([#9](https://github.com/butler54/tank-os/pull/9),
+  [`3330922`](https://github.com/butler54/tank-os/commit/333092279563e98c14a07d8b08298d994726256f))
+
+
 ## v1.1.1 (2026-05-05)
 
 ### Bug Fixes
