@@ -1,6 +1,6 @@
 # Signal Integration
 
-tank-os includes [signal-cli](https://github.com/AsamK/signal-cli), which lets OpenClaw send and receive Signal messages. signal-cli runs as a local JSON-RPC daemon; OpenClaw connects to it over `http://127.0.0.1:8080`.
+tank-os includes [signal-cli](https://github.com/AsamK/signal-cli), which lets OpenClaw send and receive Signal messages. signal-cli runs as a local JSON-RPC HTTP daemon; OpenClaw connects to it over `http://127.0.0.1:8181`.
 
 Signal support is **optional** — signal-cli is pre-installed but the daemon is not started until you register a phone number and enable the service.
 
@@ -52,9 +52,31 @@ After scanning, note the phone number associated with your account — you'll ne
 
 Replace `+15551234567` with your actual phone number in E.164 format.
 
-## Step 2: Enable the daemon
+## Step 2: Create the daemon drop-in
+
+The base `signal-cli.service` unit uses port 8181 and `--receive-mode=on-start`. You must create a drop-in to supply the account number, since that is deployment-specific:
 
 ```bash
+mkdir -p ~/.config/systemd/user/signal-cli.service.d
+cat > ~/.config/systemd/user/signal-cli.service.d/10-account.conf << 'EOF'
+[Service]
+ExecStart=
+ExecStart=/usr/local/bin/signal-cli -a +15551234567 --output=json daemon --http=0.0.0.0:8181 --receive-mode=on-start
+EOF
+```
+
+Replace `+15551234567` with your registered number.
+
+> **Port note**: The base unit uses port 8181. Do not change this to 8080 — that port is occupied by service-gator.
+>
+> **`--receive-mode=on-start`**: Required. Without it, signal-cli defaults to `on-connection` mode in multi-account configurations, which silently drops SSE events and prevents OpenClaw from receiving messages.
+>
+> **`0.0.0.0` bind**: Required when the OpenClaw container uses `Network=host` (which it does in tank-os). Binding to `127.0.0.1` would make the daemon unreachable from the container's network namespace.
+
+## Step 3: Enable the daemon
+
+```bash
+systemctl --user daemon-reload
 systemctl --user enable --now signal-cli.service
 systemctl --user status signal-cli.service
 ```
@@ -62,66 +84,73 @@ systemctl --user status signal-cli.service
 Verify the JSON-RPC interface is up:
 
 ```bash
-curl -s -X POST http://127.0.0.1:8080/api/v1/rpc \
+curl -s -X POST http://127.0.0.1:8181/api/v1/rpc \
   -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","method":"version","id":1}'
 ```
 
 You should see a response containing the signal-cli version.
 
-## Step 3: Configure OpenClaw
+## Step 4: Configure OpenClaw
 
-Edit `~/.openclaw/openclaw.json` and add a `channels` block (or merge into an existing one):
+Use `openclaw config set` to configure the Signal channel (this updates both the running gateway and the config file):
 
-```json
-{
-  "channels": {
-    "signal": {
-      "enabled": true,
-      "account": "+15551234567",
-      "httpUrl": "http://127.0.0.1:8080",
-      "autoStart": false,
-      "apiMode": "jsonrpc",
-      "dmPolicy": "pairing"
-    }
-  }
-}
+```bash
+openclaw config set channels.signal.enabled true
+openclaw config set channels.signal.account "+15551234567"
+openclaw config set channels.signal.httpUrl "http://127.0.0.1:8181"
+openclaw config set channels.signal.autoStart false
+openclaw config set channels.signal.dmPolicy "allowlist"
+openclaw config set channels.signal.allowFrom '["your-uuid-here", "+15559990100"]'
 ```
 
-Replace `+15551234567` with the phone number from Step 1.
-
-Restart OpenClaw to apply:
+Then restart OpenClaw to start the channel:
 
 ```bash
 systemctl --user restart openclaw.service
 ```
 
-## Step 4: Verify
+> **`autoStart: false`**: Required. OpenClaw must not try to spawn signal-cli itself — the binary lives on the host, not inside the OpenClaw container. signal-cli is managed by its own systemd user service.
 
-Send a direct message to the bot's Signal number from your phone. OpenClaw will reply with a pairing code (because `dmPolicy` is `"pairing"` — unknown senders must authenticate first). Enter the code in Signal to complete pairing.
+## Step 5: Verify
+
+```bash
+openclaw status --deep
+```
+
+The Signal channel should show `ON · OK · configured`. Send a direct message to the bot's Signal number. OpenClaw should reply within seconds (when using a fast local model) or up to several minutes (CPU-only inference).
 
 ## Access control
 
 | `dmPolicy` | Behaviour |
 |------------|-----------|
-| `"pairing"` | Unknown senders get a 1-hour pairing code (default, recommended) |
-| `"allowlist"` | Only numbers in `allowFrom` can message the bot |
+| `"pairing"` | Unknown senders get a 1-hour pairing code (recommended for open access) |
+| `"allowlist"` | Only entries in `allowFrom` can message the bot |
 | `"open"` | Anyone can message the bot with no approval |
 | `"disabled"` | DMs disabled; group messages only |
 
-Example allowlist config:
+### Using UUIDs in the allowlist
 
-```json
-"signal": {
-  "enabled": true,
-  "account": "+15551234567",
-  "httpUrl": "http://127.0.0.1:8080",
-  "autoStart": false,
-  "apiMode": "jsonrpc",
-  "dmPolicy": "allowlist",
-  "allowFrom": ["+19995550100"]
-}
+Signal's privacy model no longer shares sender phone numbers by default — incoming messages arrive with `"sourceNumber": null` and only a UUID. **Use UUIDs in `allowFrom`**, not phone numbers, unless the sender has explicitly enabled phone number sharing.
+
+To find sender UUIDs, check the signal-cli journal after receiving a message:
+
+```bash
+journalctl --user -u signal-cli --since "1 hour ago" --no-pager \
+  | grep dataMessage \
+  | grep -o '"sourceUuid":"[^"]*"' \
+  | sort -u
 ```
+
+Example allowlist config with UUIDs:
+
+```bash
+openclaw config set channels.signal.dmPolicy "allowlist"
+openclaw config set channels.signal.allowFrom \
+  '["22b556a4-b8ad-4d9c-a8c2-6175d1b25047", "+15559990100"]'
+```
+
+Phone numbers in `allowFrom` still work for senders who have enabled phone number visibility.
 
 ## Signal data storage
 

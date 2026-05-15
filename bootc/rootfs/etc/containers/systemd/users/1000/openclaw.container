@@ -8,7 +8,8 @@ Pull=newer
 RunInit=true
 UserNS=keep-id
 User=%U:%G
-Volume=%h/.openclaw:/home/node/.openclaw:Z
+Volume=%h/.openclaw:/home/node/.openclaw:z
+SecurityLabelLevel=s0
 Environment=HOME=/home/node
 Environment=TERM=xterm-256color
 Environment=NPM_CONFIG_CACHE=/home/node/.openclaw/.npm

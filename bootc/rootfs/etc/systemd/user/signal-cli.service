@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/signal-cli --output=json daemon --http=127.0.0.1:8080
+ExecStart=/usr/local/bin/signal-cli --output=json daemon --http=0.0.0.0:8181 --receive-mode=on-start
 Restart=on-failure
 RestartSec=5
 
