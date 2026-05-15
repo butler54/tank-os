@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v1.1.3 (2026-05-15)
+
+### Bug Fixes
+
+- Resolve Signal channel delivery failures and SELinux relabel loop
+  ([#15](https://github.com/butler54/tank-os/pull/15),
+  [`3cecdcf`](https://github.com/butler54/tank-os/commit/3cecdcf84385385d6e5ca89ea5d44489eadc46eb))
+
+
 ## v1.1.2 (2026-05-05)
 
 ### Bug Fixes
